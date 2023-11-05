@@ -4,7 +4,7 @@ using namespace System.Web
 
 <#
 .SYNOPSIS
-This script parses a Bogen System Controller (C4000 or E7000) system report (System Parameters -> Export Report)
+Parse a Bogen System Controller (C4000 or E7000) system report (System Parameters -> Export Report)
 and returns it as a collection of custom objects, one per report "page".
 #>
 function Import-NyquistReport
@@ -34,6 +34,10 @@ function Import-NyquistReport
                 Columns = $cols
                 Data = ($ws.Table.Row | Select-Object -Skip 1 | ForEach-Object { $_.Cell.Data.'#text' -join "`t" }) | ConvertFrom-Csv -Delimiter "`t" -Header $cols 
             }
+
+            # Append the worksheet name to each report entry (potentially useful when filtering, sorting, and organizing report data). 
+            $entry.Data | ForEach-Object { $_ | Add-Member -MemberType NoteProperty -Name Worksheet -Value $ws.Name } 
+
             $entry 
         } 
 
@@ -44,10 +48,10 @@ function Import-NyquistReport
         } 
 
         # Add a NoteProperty member to each report row. This allows flexibility in formatting and filtering.
-        $rpts | ForEach-Object { 
-            $ws = $_.Name
-            $_.Data | ForEach-Object { $_ | Add-Member -MemberType NoteProperty -Name Worksheet -Value $ws } 
-        }
+        # $rpts | ForEach-Object { 
+        #     $ws = $_.Name
+        #     $_.Data | ForEach-Object { $_ | Add-Member -MemberType NoteProperty -Name Worksheet -Value $ws } 
+        # }
 
         $rpts
     }
@@ -142,6 +146,7 @@ function ConvertFrom-NyquistReport
         {
             # If Show was specified, format the output, else return the reports as is. 
             $InputObject | ForEach-Object { "## $($_.Name)" | Show-Markdown; $_.Data | Format-Table -AutoSize } 
+#            $InputObject | ForEach-Object { "$([char]27)[4m" + $_.Name + "$([char]27)[0m" | Write-Host -ForegroundColor Red; $_.Data | Format-Table -AutoSize } 
         }
     }
 }
