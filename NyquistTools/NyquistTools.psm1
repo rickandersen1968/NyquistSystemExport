@@ -6,17 +6,38 @@ using namespace System.Web
 .SYNOPSIS
 Parse a Bogen System Controller (C4000 or E7000) system report (System Parameters -> Export Report)
 and returns it as a collection of custom objects, one per report "page".
+
+.EXAMPLE
+Import-NyquistReport -Path 'system_export.xml' -Filter A* -Show
+
+.EXAMPLE
+Import-NyquistReport -Path 'system_export.xml' -Filter System* | foreach { $_.Data | Out-GridView -Title $_.Section }
+
+Out-GridView is only available on Windows
+
+.EXAMPLE
+Import-NyquistReport -Path 'system_export.xml' -Filter A* | foreach { $_.Data | Out-GridView -Title $_.Section }
+
+Out-GridView is only available on Windows
+
+.EXAMPLE
+Import-NyquistReport -Path 'system_export.xml' -Filter A* | ConvertFrom-NyquistReport -Markdown | Join-String | Show-Markdown -UseBrowser
+
+Show-Markdown is only available on PowerShell 6.0+
 #>
 function Import-NyquistReport
 {
     [CmdletBinding()]
     param 
     (
+        # Path to the Nyquist report XML file.
         [Parameter(ValueFromPipeline,Mandatory=$true)]
         [String[]] $Path,
 
+        # Pattern-matched name of the report(s) to be returned. 
         [string] $Filter = '*',
 
+        # Formats the report(s) for display at the console.
         [switch] $Show
     )
 
@@ -68,7 +89,7 @@ function Import-NyquistReport
 
 <#
 .SYNOPSIS
-Convert the Nyquist report to one of several formats:
+Convert the specified Nyquist report to one of several formats:
 
     * HTML text
     * Markdown text
@@ -79,15 +100,21 @@ function ConvertFrom-NyquistReport
     [CmdletBinding()]
     param 
     (
+        # The report(s) to be converted.
         [Parameter(ValueFromPipeline,Mandatory=$true)]
         [object[]] $InputObject,
 
+        # Convert the report(s) to Markdown format. 
+        # This can be displayed in a browser by piping to `| Join-String | Show-Markdown -UseBrowser`
+        # or by saving it to a file (e.g., `| Out-File test.md`), which can be viewed in any Markdown-capable viewer. 
         [Parameter(ParameterSetName='Markdown')]
         [switch] $Markdown,
 
+        # Convert the report(s) to HTML, which can be saved to a file and viewed in a browser.
         [Parameter(ParameterSetName='Html')]
         [switch] $Html,
 
+        # Formats the report(s) for display at the console.
         [Parameter(ParameterSetName='Show')]
         [switch] $Show
     )
