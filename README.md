@@ -10,6 +10,13 @@ To view the Nyquist System Parameters report using this XSL conversion, add the 
   <?xml-stylesheet type="text/xsl" href="system_export.xsl"?>
   ```
 
+### Pscx module
+The [Pscx module](https://github.com/Pscx/Pscx) contains several cmdlets that could be useful in this context, most notably `Convert-Xml`, which can apply an XSLT transform on an XML file. This should allow the existing System Export report to be converted to HTML without having to modify the existing Nyquist implementation (as the XML file won't need to have the XSLT reference added to it).
+
+```powershell
+Convert-Xml -Path '.\system_export (fixed).xml' -XsltPath ".\system_export.xsl" 
+```
+
 ## PowerShell module
 Another idea is to define a PowerShell module that can parse a System Export report and convert it to any of multiple formats to allow the user to view and and manipulate the report data.
 
